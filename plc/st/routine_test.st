@@ -1,0 +1,766 @@
+(*
+  ROUTINE_TEST: automated routine test of a low-voltage synchronous alternator
+  on a production test bench.
+
+  IEC 61131-3 Structured Text. Compiled with matiec (iec2c) and run once per
+  PLC scan against the simulated bench (station/plant.py).
+
+  Conventions
+    rc*  recipe values from the production order (set before cmdStart)
+    m*   measurements and status from the bench
+    q*   commands to the bench
+    rs*  latched results, one per check (see C_* check IDs)
+
+  Time base: the caller passes the scan time in cycleTime [s]. Step timers
+  are accumulated from it, so the logic is deterministic in simulation.
+*)
+
+FUNCTION BIT_OF : DWORD
+VAR_INPUT
+  id : INT;
+END_VAR
+  BIT_OF := SHL(DWORD#1, id);
+END_FUNCTION
+
+FUNCTION_BLOCK ROUTINE_TEST
+VAR_INPUT
+  cycleTime : REAL;
+  (* operator / MES *)
+  cmdStart : BOOL;
+  cmdAbort : BOOL;
+  cmdReset : BOOL;
+  opChecksOk : BOOL;
+  (* safety and bench status *)
+  estopOk : BOOL;
+  gateClosed : BOOL;
+  driveReady : BOOL;
+  loadReady : BOOL;
+  benchFault : BOOL;
+  (* recipe: production order *)
+  rcUn : REAL;
+  rcFn : REAL;
+  rcPoles : INT;
+  rcPtestKw : REAL;
+  rcExcType : INT;
+  rcTypeTest : BOOL;
+  rcCtFitted : BOOL;
+  rcTestDelta : BOOL;
+  rcUnStar : REAL;
+  rcHeaterFitted : BOOL;
+  rcHeaterR : REAL;
+  rcHeaterTolPct : REAL;
+  rcRStator : REAL;
+  rcRRotor : REAL;
+  rcRExcSt : REAL;
+  rcRExcRot : REAL;
+  rcRTolPct : REAL;
+  rcIrKv : REAL;
+  rcIrTime : REAL;
+  rcIrMin : REAL;
+  rcHvKv : REAL;
+  rcHvTime : REAL;
+  rcHvLeakMax : REAL;
+  rcIf0Nom : REAL;
+  rcIf0TolPct : REAL;
+  rcIfLNom : REAL;
+  rcIfLTolPct : REAL;
+  rcUnbalMax : REAL;
+  rcAvrSupMin : REAL;
+  rcAvrSupMax : REAL;
+  rcSatMin : REAL;
+  rcSatMax : REAL;
+  rcBuildLvlPct : REAL;
+  rcBuildMaxHz : REAL;
+  rcAvrUTolPct : REAL;
+  rcRegTolPct : REAL;
+  rcCtSecMin : REAL;
+  rcCtSecMax : REAL;
+  rcRemMinPct : REAL;
+  rcPt100Min : REAL;
+  rcPt100Max : REAL;
+  rcPtcMin : REAL;
+  rcPtcMax : REAL;
+  rcSettle : REAL;
+  rcOverspeedTime : REAL;
+  rcOverloadTime : REAL;
+  rcStepTimeout : REAL;
+  (* measurements *)
+  mSpeed : REAL;
+  mFreq : REAL;
+  mU12 : REAL;
+  mU23 : REAL;
+  mU31 : REAL;
+  mIload : REAL;
+  mPkw : REAL;
+  mIexc : REAL;
+  mR : REAL;
+  mTwind : REAL;
+  mIr : REAL;
+  mHvKv : REAL;
+  mHvLeak : REAL;
+  mHvTrip : BOOL;
+  mPhaseSeqOk : BOOL;
+  mAvrSup : REAL;
+  mCtSec : REAL;
+  mCtPolOk : BOOL;
+  mPt100 : REAL;
+  mPtc : REAL;
+  mHeater : REAL;
+  mDriveFault : BOOL;
+END_VAR
+VAR_OUTPUT
+  (* bench commands *)
+  qDriveRun : BOOL;
+  qSpeedSp : REAL;
+  qExcMode : INT;      (* 0 = open, 1 = external DC excitation, 2 = AVR *)
+  qIexcSp : REAL;
+  qAvrUSp : REAL;
+  qLoadOn : BOOL;
+  qLoadKw : REAL;
+  qLoadPf : REAL;
+  qHvOn : BOOL;
+  qHvKvSp : REAL;
+  qIrOn : BOOL;
+  qIrKv : REAL;
+  qRCh : INT;          (* 1 stator, 2 main rotor, 3 exciter stator, 4 exciter rotor *)
+  qProbeCh : INT;      (* 1 PT100, 2 PTC, 3 space heater *)
+  qConnDelta : BOOL;
+  (* status *)
+  stepNo : INT;
+  busy : BOOL;
+  done : BOOL;
+  aborted : BOOL;
+  abortCode : INT;
+  abortStep : INT;
+  verdictPass : BOOL;
+  firstFail : INT;
+  chkExpected : DWORD;
+  chkDone : DWORD;
+  chkPass : DWORD;
+  testTime : REAL;
+  (* results *)
+  rsRStator : REAL;
+  rsRRotor : REAL;
+  rsRExcSt : REAL;
+  rsRExcRot : REAL;
+  rsIrBefore : REAL;
+  rsHvLeak : REAL;
+  rsIrAfter : REAL;
+  rsUnbal : REAL;
+  rsIf0 : REAL;
+  rsAvrSup : REAL;
+  rsIfLoad : REAL;
+  rsSat : REAL;
+  rsBuildHz : REAL;
+  rsAvrU : REAL;
+  rsRegPf08 : REAL;
+  rsRegPf10 : REAL;
+  rsCtSec : REAL;
+  rsUStar : REAL;
+  rsRem : REAL;
+  rsOverload : REAL;
+  rsOverspeed : REAL;
+  rsPt100 : REAL;
+  rsPtc : REAL;
+  rsHeater : REAL;
+END_VAR
+VAR CONSTANT
+  (* check IDs = bit numbers in chkExpected / chkDone / chkPass *)
+  C_R_STATOR : INT := 1;
+  C_R_ROTOR : INT := 2;
+  C_R_EXC_ST : INT := 3;
+  C_R_EXC_ROT : INT := 4;
+  C_IR_BEFORE : INT := 5;
+  C_HV : INT := 6;
+  C_IR_AFTER : INT := 7;
+  C_PHASE_SEQ : INT := 8;
+  C_UNBAL : INT := 9;
+  C_IF_NOLOAD : INT := 10;
+  C_AVR_SUPPLY : INT := 11;
+  C_IF_LOAD : INT := 12;
+  C_SAT : INT := 13;
+  C_BUILDUP : INT := 14;
+  C_AVR_U : INT := 15;
+  C_REG_PF08 : INT := 16;
+  C_REG_PF10 : INT := 17;
+  C_CT : INT := 18;
+  C_U_STAR : INT := 19;
+  C_REMANENT : INT := 20;
+  C_OVERLOAD : INT := 21;
+  C_OVERSPEED : INT := 22;
+  C_PT100 : INT := 23;
+  C_PTC : INT := 24;
+  C_HEATER : INT := 25;
+  (* steps *)
+  S_IDLE : INT := 0;
+  S_PRECHECK : INT := 10;
+  S_RES : INT := 20;
+  S_IR_BEFORE : INT := 30;
+  S_HV_RAMP : INT := 31;
+  S_HV_HOLD : INT := 32;
+  S_HV_DOWN : INT := 33;
+  S_IR_AFTER : INT := 34;
+  S_RUNUP_EXT : INT := 40;
+  S_NOLOAD_EXT : INT := 41;
+  S_ONLOAD_EXT : INT := 43;
+  S_CUTOFF : INT := 44;
+  S_STOP_EXT : INT := 45;
+  S_RUNUP_AVR : INT := 50;
+  S_AVR_NOLOAD : INT := 51;
+  S_PF08 : INT := 52;
+  S_PF10 : INT := 53;
+  S_OVERLOAD : INT := 54;
+  S_UNLOAD : INT := 55;
+  S_STAR_DEEXC : INT := 56;
+  S_STAR_CHECK : INT := 57;
+  S_REMANENT : INT := 58;
+  S_OVERSPEED_UP : INT := 60;
+  S_OVERSPEED_HOLD : INT := 61;
+  S_RUNDOWN : INT := 62;
+  S_PROBES : INT := 70;
+  S_FINISH : INT := 90;
+  S_DONE : INT := 99;
+  S_ABORTED : INT := 900;
+  (* abort codes *)
+  A_ESTOP : INT := 1;
+  A_OPERATOR : INT := 2;
+  A_BENCH : INT := 3;
+  A_DRIVE : INT := 4;
+  A_GATE : INT := 5;
+  A_TIMEOUT : INT := 6;
+  (* fixed tuning *)
+  EXC_KP : REAL := 0.5;
+  EXC_KI : REAL := 0.8;
+  HV_RAMP_KV_S : REAL := 1.0;
+  CU_K : REAL := 235.0;     (* copper temperature constant, IEC 60034-1 *)
+END_VAR
+VAR
+  startEdge : R_TRIG;
+  prevStep : INT := -1;
+  entry : BOOL;
+  tStep : REAL;
+  tStable : REAL;
+  idx : INT;
+  nNom : REAL;
+  uNom : REAL;
+  uAvg : REAL;
+  uDevMax : REAL;
+  excErr : REAL;
+  excInt : REAL;
+  uNoLoadAvr : REAL;
+  uMinOverload : REAL;
+  speedMax : REAL;
+  buildSeen : BOOL;
+  rTmp : REAL;
+  ok : BOOL;
+  cid : INT;
+  stopEarly : BOOL;
+  loadIn : BOOL;
+END_VAR
+
+(* ---------------- common values ---------------- *)
+nNom := 120.0 * rcFn / INT_TO_REAL(MAX(rcPoles, 2));
+uAvg := (mU12 + mU23 + mU31) / 3.0;
+IF uAvg > 1.0 THEN
+  uDevMax := MAX(ABS(mU12 - uAvg), MAX(ABS(mU23 - uAvg), ABS(mU31 - uAvg)));
+ELSE
+  uDevMax := 0.0;
+END_IF;
+
+(* load bank fully applied: constant-impedance bank, so P scales with U^2 *)
+loadIn := mPkw >= 0.95 * rcPtestKw * (uAvg / MAX(rcUn, 1.0)) * (uAvg / MAX(rcUn, 1.0));
+
+entry := stepNo <> prevStep;
+prevStep := stepNo;
+IF entry THEN
+  tStep := 0.0;
+  tStable := 0.0;
+END_IF;
+
+(* ---------------- safety: abort conditions (checked every scan) ---------------- *)
+IF busy THEN
+  IF NOT estopOk THEN
+    abortCode := A_ESTOP;
+  ELSIF cmdAbort THEN
+    abortCode := A_OPERATOR;
+  ELSIF benchFault THEN
+    abortCode := A_BENCH;
+  ELSIF mDriveFault THEN
+    abortCode := A_DRIVE;
+  ELSIF (qHvOn OR qIrOn) AND NOT gateClosed THEN
+    abortCode := A_GATE;
+  ELSIF tStep > rcStepTimeout THEN
+    abortCode := A_TIMEOUT;
+  END_IF;
+  IF abortCode <> 0 THEN
+    abortStep := stepNo;
+    stepNo := S_ABORTED;
+  END_IF;
+END_IF;
+
+startEdge(CLK := cmdStart);
+
+(* ---------------- sequence ---------------- *)
+CASE stepNo OF
+
+0, 99:  (* S_IDLE, S_DONE *)
+  busy := FALSE;
+  IF startEdge.Q AND opChecksOk AND estopOk THEN
+    (* new test: clear everything from the previous unit *)
+    done := FALSE; aborted := FALSE; verdictPass := FALSE;
+    abortCode := 0; abortStep := 0; firstFail := 0;
+    chkDone := DWORD#0; chkPass := DWORD#0;
+    testTime := 0.0; stopEarly := FALSE;
+    rsRStator := 0.0; rsRRotor := 0.0; rsRExcSt := 0.0; rsRExcRot := 0.0;
+    rsIrBefore := 0.0; rsHvLeak := 0.0; rsIrAfter := 0.0; rsUnbal := 0.0;
+    rsIf0 := 0.0; rsAvrSup := 0.0; rsIfLoad := 0.0; rsSat := 0.0;
+    rsBuildHz := 0.0; rsAvrU := 0.0; rsRegPf08 := 0.0; rsRegPf10 := 0.0;
+    rsCtSec := 0.0; rsUStar := 0.0; rsRem := 0.0; rsOverload := 0.0;
+    rsOverspeed := 0.0; rsPt100 := 0.0; rsPtc := 0.0; rsHeater := 0.0;
+    (* which checks apply to this order *)
+    chkExpected := DWORD#0;
+    FOR idx := C_R_STATOR TO C_HEATER DO
+      chkExpected := chkExpected OR BIT_OF(idx);
+    END_FOR;
+    IF NOT rcTypeTest THEN
+      chkExpected := chkExpected AND NOT (BIT_OF(C_IR_AFTER) OR BIT_OF(C_OVERLOAD) OR BIT_OF(C_OVERSPEED));
+    END_IF;
+    IF NOT rcCtFitted THEN
+      chkExpected := chkExpected AND NOT BIT_OF(C_CT);
+    END_IF;
+    IF NOT rcTestDelta THEN
+      chkExpected := chkExpected AND NOT BIT_OF(C_U_STAR);
+    END_IF;
+    IF NOT rcHeaterFitted THEN
+      chkExpected := chkExpected AND NOT BIT_OF(C_HEATER);
+    END_IF;
+    busy := TRUE;
+    qConnDelta := rcTestDelta;
+    stepNo := S_PRECHECK;
+  END_IF;
+
+10:  (* S_PRECHECK *)
+  IF driveReady AND loadReady AND gateClosed AND mSpeed < 1.0 THEN
+    idx := 1;
+    stepNo := S_RES;
+  END_IF;
+
+20:  (* S_RES *)
+  (* four winding resistances, corrected to 20 degC *)
+  qRCh := idx;
+  IF tStep >= 3.0 THEN
+    rTmp := mR * (CU_K + 20.0) / (CU_K + mTwind);
+    IF idx = 1 THEN
+      rsRStator := rTmp; cid := C_R_STATOR; ok := ABS(rTmp - rcRStator) <= rcRStator * rcRTolPct / 100.0;
+    ELSIF idx = 2 THEN
+      rsRRotor := rTmp; cid := C_R_ROTOR; ok := ABS(rTmp - rcRRotor) <= rcRRotor * rcRTolPct / 100.0;
+    ELSIF idx = 3 THEN
+      rsRExcSt := rTmp; cid := C_R_EXC_ST; ok := ABS(rTmp - rcRExcSt) <= rcRExcSt * rcRTolPct / 100.0;
+    ELSE
+      rsRExcRot := rTmp; cid := C_R_EXC_ROT; ok := ABS(rTmp - rcRExcRot) <= rcRExcRot * rcRTolPct / 100.0;
+    END_IF;
+    chkDone := chkDone OR BIT_OF(cid);
+    IF ok THEN chkPass := chkPass OR BIT_OF(cid); ELSIF firstFail = 0 THEN firstFail := cid; END_IF;
+    IF idx < 4 THEN
+      idx := idx + 1;
+      prevStep := -1;   (* restart the step timer for the next channel *)
+    ELSE
+      qRCh := 0;
+      stepNo := S_IR_BEFORE;
+    END_IF;
+  END_IF;
+
+30:  (* S_IR_BEFORE *)
+  qIrOn := TRUE; qIrKv := rcIrKv;
+  IF tStep >= rcIrTime THEN
+    rsIrBefore := mIr;
+    qIrOn := FALSE;
+    chkDone := chkDone OR BIT_OF(C_IR_BEFORE);
+    IF mIr >= rcIrMin THEN
+      chkPass := chkPass OR BIT_OF(C_IR_BEFORE);
+      stepNo := S_HV_RAMP;
+    ELSE
+      (* no high-voltage test and no run on a wet or damaged winding *)
+      IF firstFail = 0 THEN firstFail := C_IR_BEFORE; END_IF;
+      stopEarly := TRUE;
+      stepNo := S_FINISH;
+    END_IF;
+  END_IF;
+
+31:  (* S_HV_RAMP *)
+  qHvOn := TRUE;
+  qHvKvSp := MIN(rcHvKv, HV_RAMP_KV_S * tStep);
+  IF mHvTrip THEN
+    rsHvLeak := mHvLeak;
+    chkDone := chkDone OR BIT_OF(C_HV);
+    IF firstFail = 0 THEN firstFail := C_HV; END_IF;
+    stopEarly := TRUE;
+    stepNo := S_HV_DOWN;
+  ELSIF mHvKv >= 0.98 * rcHvKv THEN
+    stepNo := S_HV_HOLD;
+  END_IF;
+
+32:  (* S_HV_HOLD *)
+  qHvOn := TRUE; qHvKvSp := rcHvKv;
+  rsHvLeak := MAX(rsHvLeak, mHvLeak);
+  IF mHvTrip OR mHvLeak > rcHvLeakMax THEN
+    chkDone := chkDone OR BIT_OF(C_HV);
+    IF firstFail = 0 THEN firstFail := C_HV; END_IF;
+    stopEarly := TRUE;
+    stepNo := S_HV_DOWN;
+  ELSIF tStep >= rcHvTime THEN
+    chkDone := chkDone OR BIT_OF(C_HV);
+    chkPass := chkPass OR BIT_OF(C_HV);
+    stepNo := S_HV_DOWN;
+  END_IF;
+
+33:  (* S_HV_DOWN *)
+  qHvKvSp := 0.0;
+  IF mHvKv < 0.05 THEN
+    qHvOn := FALSE;
+    IF tStep >= 5.0 THEN   (* discharge time before anything else is touched *)
+      IF stopEarly THEN
+        stepNo := S_FINISH;
+      ELSIF rcTypeTest THEN
+        stepNo := S_IR_AFTER;
+      ELSE
+        stepNo := S_RUNUP_EXT;
+      END_IF;
+    END_IF;
+  END_IF;
+
+34:  (* S_IR_AFTER *)
+  qIrOn := TRUE; qIrKv := rcIrKv;
+  IF tStep >= rcIrTime THEN
+    rsIrAfter := mIr;
+    qIrOn := FALSE;
+    chkDone := chkDone OR BIT_OF(C_IR_AFTER);
+    IF mIr >= rcIrMin THEN
+      chkPass := chkPass OR BIT_OF(C_IR_AFTER);
+      stepNo := S_RUNUP_EXT;
+    ELSE
+      IF firstFail = 0 THEN firstFail := C_IR_AFTER; END_IF;
+      stopEarly := TRUE;
+      stepNo := S_FINISH;
+    END_IF;
+  END_IF;
+
+40:  (* S_RUNUP_EXT *)
+  qExcMode := 1; qIexcSp := 0.0;
+  qDriveRun := TRUE; qSpeedSp := nNom;
+  IF ABS(mSpeed - nNom) <= 0.01 * nNom THEN
+    excInt := 1.0;
+    stepNo := S_NOLOAD_EXT;
+  END_IF;
+
+41:  (* S_NOLOAD_EXT *)
+  (* external excitation, no load: find the field current for rated voltage *)
+  excErr := (rcUn - uAvg) / rcUn;
+  excInt := LIMIT(0.0, excInt + EXC_KI * excErr * cycleTime, 8.0);
+  qIexcSp := rcIf0Nom * LIMIT(0.0, excInt + EXC_KP * excErr, 8.0);
+  IF ABS(excErr) < 0.002 THEN tStable := tStable + cycleTime; ELSE tStable := 0.0; END_IF;
+  IF tStable >= rcSettle THEN
+    rsIf0 := mIexc;
+    chkDone := chkDone OR BIT_OF(C_IF_NOLOAD);
+    IF ABS(mIexc - rcIf0Nom) <= rcIf0Nom * rcIf0TolPct / 100.0 THEN
+      chkPass := chkPass OR BIT_OF(C_IF_NOLOAD);
+    ELSIF firstFail = 0 THEN firstFail := C_IF_NOLOAD; END_IF;
+
+    rsUnbal := 100.0 * uDevMax / uAvg;
+    chkDone := chkDone OR BIT_OF(C_UNBAL);
+    IF rsUnbal <= rcUnbalMax THEN
+      chkPass := chkPass OR BIT_OF(C_UNBAL);
+    ELSIF firstFail = 0 THEN firstFail := C_UNBAL; END_IF;
+
+    chkDone := chkDone OR BIT_OF(C_PHASE_SEQ);
+    IF mPhaseSeqOk THEN
+      chkPass := chkPass OR BIT_OF(C_PHASE_SEQ);
+    ELSIF firstFail = 0 THEN firstFail := C_PHASE_SEQ; END_IF;
+
+    rsAvrSup := mAvrSup;
+    chkDone := chkDone OR BIT_OF(C_AVR_SUPPLY);
+    IF mAvrSup >= rcAvrSupMin AND mAvrSup <= rcAvrSupMax THEN
+      chkPass := chkPass OR BIT_OF(C_AVR_SUPPLY);
+    ELSIF firstFail = 0 THEN firstFail := C_AVR_SUPPLY; END_IF;
+
+    excInt := rcIfLNom / rcIf0Nom;   (* feed-forward for the load point *)
+    stepNo := S_ONLOAD_EXT;
+  END_IF;
+
+43:  (* S_ONLOAD_EXT *)
+  qLoadOn := TRUE; qLoadKw := rcPtestKw; qLoadPf := 0.8;
+  excErr := (rcUn - uAvg) / rcUn;
+  excInt := LIMIT(0.0, excInt + EXC_KI * excErr * cycleTime, 8.0);
+  qIexcSp := rcIf0Nom * LIMIT(0.0, excInt + EXC_KP * excErr, 8.0);
+  IF ABS(excErr) < 0.002 AND loadIn THEN
+    tStable := tStable + cycleTime;
+  ELSE
+    tStable := 0.0;
+  END_IF;
+  IF tStable >= rcSettle THEN
+    rsIfLoad := mIexc;
+    chkDone := chkDone OR BIT_OF(C_IF_LOAD);
+    IF ABS(mIexc - rcIfLNom) <= rcIfLNom * rcIfLTolPct / 100.0 THEN
+      chkPass := chkPass OR BIT_OF(C_IF_LOAD);
+    ELSIF firstFail = 0 THEN firstFail := C_IF_LOAD; END_IF;
+    qIexcSp := mIexc;   (* hold this field current for the load cut-off *)
+    stepNo := S_CUTOFF;
+  END_IF;
+
+44:  (* S_CUTOFF *)
+  (* drop the load with the on-load field current held: saturated voltage *)
+  qLoadOn := FALSE; qLoadKw := 0.0;
+  IF tStep >= 3.0 THEN
+    rsSat := uAvg / rcUn;
+    chkDone := chkDone OR BIT_OF(C_SAT);
+    IF rsSat >= rcSatMin AND rsSat <= rcSatMax THEN
+      chkPass := chkPass OR BIT_OF(C_SAT);
+    ELSIF firstFail = 0 THEN firstFail := C_SAT; END_IF;
+    stepNo := S_STOP_EXT;
+  END_IF;
+
+45:  (* S_STOP_EXT *)
+  (* de-excite and stop, then restart with the AVR to watch voltage build-up *)
+  qExcMode := 0; qIexcSp := 0.0;
+  qSpeedSp := 0.0;
+  IF mSpeed < 0.05 * nNom THEN
+    buildSeen := FALSE;
+    rsBuildHz := 0.0;
+    stepNo := S_RUNUP_AVR;
+  END_IF;
+
+50:  (* S_RUNUP_AVR *)
+  qExcMode := 2; qAvrUSp := rcUn;
+  qSpeedSp := nNom;
+  IF NOT buildSeen AND uAvg >= rcBuildLvlPct / 100.0 * rcUn THEN
+    buildSeen := TRUE;
+    rsBuildHz := mFreq;
+  END_IF;
+  IF ABS(mSpeed - nNom) <= 0.01 * nNom THEN
+    IF NOT buildSeen THEN
+      rsBuildHz := mFreq;   (* never built up below rated speed *)
+    END_IF;
+    chkDone := chkDone OR BIT_OF(C_BUILDUP);
+    IF buildSeen AND rsBuildHz <= rcBuildMaxHz THEN
+      chkPass := chkPass OR BIT_OF(C_BUILDUP);
+    ELSIF firstFail = 0 THEN firstFail := C_BUILDUP; END_IF;
+    stepNo := S_AVR_NOLOAD;
+  END_IF;
+
+51:  (* S_AVR_NOLOAD *)
+  IF tStep >= rcSettle THEN
+    uNoLoadAvr := uAvg;
+    rsAvrU := 100.0 * (uAvg - rcUn) / rcUn;
+    chkDone := chkDone OR BIT_OF(C_AVR_U);
+    IF ABS(rsAvrU) <= rcAvrUTolPct THEN
+      chkPass := chkPass OR BIT_OF(C_AVR_U);
+    ELSIF firstFail = 0 THEN firstFail := C_AVR_U; END_IF;
+    IF uAvg < 0.5 * rcUn THEN
+      (* no voltage with the AVR: no load points, go straight to remanence and run-down *)
+      stopEarly := TRUE;
+      stepNo := S_REMANENT;
+    ELSE
+      stepNo := S_PF08;
+    END_IF;
+  END_IF;
+
+52:  (* S_PF08 *)
+  qLoadOn := TRUE; qLoadKw := rcPtestKw; qLoadPf := 0.8;
+  IF tStep >= rcSettle AND loadIn THEN
+    rsRegPf08 := 100.0 * (uAvg - uNoLoadAvr) / uNoLoadAvr;
+    chkDone := chkDone OR BIT_OF(C_REG_PF08);
+    IF ABS(rsRegPf08) <= rcRegTolPct THEN
+      chkPass := chkPass OR BIT_OF(C_REG_PF08);
+    ELSIF firstFail = 0 THEN firstFail := C_REG_PF08; END_IF;
+    IF rcCtFitted THEN
+      rsCtSec := mCtSec;
+      chkDone := chkDone OR BIT_OF(C_CT);
+      IF mCtPolOk AND mCtSec >= rcCtSecMin AND mCtSec <= rcCtSecMax THEN
+        chkPass := chkPass OR BIT_OF(C_CT);
+      ELSIF firstFail = 0 THEN firstFail := C_CT; END_IF;
+    END_IF;
+    stepNo := S_PF10;
+  END_IF;
+
+53:  (* S_PF10 *)
+  qLoadOn := TRUE; qLoadKw := rcPtestKw; qLoadPf := 1.0;
+  IF tStep >= rcSettle AND loadIn THEN
+    rsRegPf10 := 100.0 * (uAvg - uNoLoadAvr) / uNoLoadAvr;
+    chkDone := chkDone OR BIT_OF(C_REG_PF10);
+    IF ABS(rsRegPf10) <= rcRegTolPct THEN
+      chkPass := chkPass OR BIT_OF(C_REG_PF10);
+    ELSIF firstFail = 0 THEN firstFail := C_REG_PF10; END_IF;
+    IF rcTypeTest THEN
+      uMinOverload := uAvg;
+      stepNo := S_OVERLOAD;
+    ELSE
+      stepNo := S_UNLOAD;
+    END_IF;
+  END_IF;
+
+54:  (* S_OVERLOAD *)
+  (* type test: 150 % current at PF 0.8 for rcOverloadTime *)
+  qLoadOn := TRUE; qLoadKw := 1.5 * rcPtestKw; qLoadPf := 0.8;
+  IF tStep >= 2.0 THEN
+    uMinOverload := MIN(uMinOverload, uAvg);
+  END_IF;
+  IF tStep >= 2.0 + rcOverloadTime THEN
+    rsOverload := 100.0 * uMinOverload / uNoLoadAvr;
+    chkDone := chkDone OR BIT_OF(C_OVERLOAD);
+    IF rsOverload >= 90.0 THEN
+      chkPass := chkPass OR BIT_OF(C_OVERLOAD);
+    ELSIF firstFail = 0 THEN firstFail := C_OVERLOAD; END_IF;
+    stepNo := S_UNLOAD;
+  END_IF;
+
+55:  (* S_UNLOAD *)
+  qLoadOn := FALSE; qLoadKw := 0.0; qLoadPf := 1.0;
+  IF tStep >= 3.0 THEN
+    IF rcTestDelta THEN
+      stepNo := S_STAR_DEEXC;
+    ELSE
+      stepNo := S_REMANENT;
+    END_IF;
+  END_IF;
+
+56:  (* S_STAR_DEEXC *)
+  (* reconnect from the delta test connection to star; switch only de-excited *)
+  qExcMode := 0;
+  IF uAvg < 0.2 * rcUn AND tStep >= 2.0 THEN
+    qConnDelta := FALSE;
+    qAvrUSp := rcUnStar;
+    stepNo := S_STAR_CHECK;
+  END_IF;
+
+57:  (* S_STAR_CHECK *)
+  qExcMode := 2;
+  IF tStep >= rcSettle THEN
+    rsUStar := 100.0 * (uAvg - rcUnStar) / rcUnStar;
+    chkDone := chkDone OR BIT_OF(C_U_STAR);
+    IF ABS(rsUStar) <= rcAvrUTolPct THEN
+      chkPass := chkPass OR BIT_OF(C_U_STAR);
+    ELSIF firstFail = 0 THEN firstFail := C_U_STAR; END_IF;
+    stepNo := S_REMANENT;
+  END_IF;
+
+58:  (* S_REMANENT *)
+  (* open the excitation circuit at rated speed: residual voltage *)
+  qExcMode := 0;
+  IF tStep >= 4.0 THEN
+    IF rcTestDelta AND NOT qConnDelta THEN uNom := rcUnStar; ELSE uNom := rcUn; END_IF;
+    rsRem := 100.0 * uAvg / uNom;
+    chkDone := chkDone OR BIT_OF(C_REMANENT);
+    IF rsRem >= rcRemMinPct THEN
+      chkPass := chkPass OR BIT_OF(C_REMANENT);
+    ELSIF firstFail = 0 THEN firstFail := C_REMANENT; END_IF;
+    IF rcTypeTest THEN
+      speedMax := 0.0;
+      stepNo := S_OVERSPEED_UP;
+    ELSE
+      stepNo := S_RUNDOWN;
+    END_IF;
+  END_IF;
+
+60:  (* S_OVERSPEED_UP *)
+  qExcMode := 0;
+  qSpeedSp := 1.2 * nNom;
+  IF ABS(mSpeed - 1.2 * nNom) <= 0.01 * nNom THEN
+    stepNo := S_OVERSPEED_HOLD;
+  END_IF;
+
+61:  (* S_OVERSPEED_HOLD *)
+  qSpeedSp := 1.2 * nNom;
+  speedMax := MAX(speedMax, mSpeed);
+  IF ABS(mSpeed - 1.2 * nNom) > 0.02 * nNom THEN
+    chkDone := chkDone OR BIT_OF(C_OVERSPEED);
+    rsOverspeed := 100.0 * mSpeed / nNom;
+    IF firstFail = 0 THEN firstFail := C_OVERSPEED; END_IF;
+    stepNo := S_RUNDOWN;
+  ELSIF tStep >= rcOverspeedTime THEN
+    rsOverspeed := 100.0 * speedMax / nNom;
+    chkDone := chkDone OR BIT_OF(C_OVERSPEED);
+    chkPass := chkPass OR BIT_OF(C_OVERSPEED);
+    stepNo := S_RUNDOWN;
+  END_IF;
+
+62:  (* S_RUNDOWN *)
+  qExcMode := 0; qLoadOn := FALSE;
+  qSpeedSp := 0.0;
+  IF mSpeed < 1.0 THEN
+    qDriveRun := FALSE;
+    idx := 1;
+    stepNo := S_PROBES;
+  END_IF;
+
+70:  (* S_PROBES *)
+  IF idx = 3 AND NOT rcHeaterFitted THEN
+    qProbeCh := 0;
+    stepNo := S_FINISH;
+  ELSE
+    qProbeCh := idx;
+    IF tStep >= 2.0 THEN
+      IF idx = 1 THEN
+        rsPt100 := mPt100; cid := C_PT100; ok := mPt100 >= rcPt100Min AND mPt100 <= rcPt100Max;
+      ELSIF idx = 2 THEN
+        rsPtc := mPtc; cid := C_PTC; ok := mPtc >= rcPtcMin AND mPtc <= rcPtcMax;
+      ELSE
+        rsHeater := mHeater; cid := C_HEATER; ok := ABS(mHeater - rcHeaterR) <= rcHeaterR * rcHeaterTolPct / 100.0;
+      END_IF;
+      chkDone := chkDone OR BIT_OF(cid);
+      IF ok THEN chkPass := chkPass OR BIT_OF(cid); ELSIF firstFail = 0 THEN firstFail := cid; END_IF;
+      IF idx < 3 THEN
+        idx := idx + 1;
+        prevStep := -1;
+      ELSE
+        qProbeCh := 0;
+        stepNo := S_FINISH;
+      END_IF;
+    END_IF;
+  END_IF;
+
+90:  (* S_FINISH *)
+  verdictPass := (chkDone = chkExpected) AND (chkPass = chkExpected) AND NOT stopEarly;
+  done := TRUE;
+  busy := FALSE;
+  stepNo := S_DONE;
+
+900:  (* S_ABORTED *)
+  busy := FALSE;
+  aborted := TRUE;
+  done := TRUE;
+  verdictPass := FALSE;
+  IF cmdReset AND estopOk THEN
+    abortCode := 0;
+    stepNo := S_IDLE;
+  END_IF;
+
+END_CASE;
+
+(* ---------------- output stage: safe states and interlocks ---------------- *)
+IF stepNo = S_ABORTED OR stepNo = S_DONE OR stepNo = S_IDLE OR stepNo = S_FINISH THEN
+  qDriveRun := FALSE; qSpeedSp := 0.0;
+  qExcMode := 0; qIexcSp := 0.0;
+  qLoadOn := FALSE; qLoadKw := 0.0;
+  qHvOn := FALSE; qHvKvSp := 0.0; qIrOn := FALSE;
+  qRCh := 0; qProbeCh := 0;
+END_IF;
+(* high voltage and insulation test only with the gate closed and the rotor at rest *)
+IF NOT gateClosed OR mSpeed >= 1.0 THEN
+  qHvOn := FALSE; qHvKvSp := 0.0; qIrOn := FALSE;
+END_IF;
+(* the drive never runs while high voltage or the megger is applied *)
+IF qHvOn OR qIrOn OR mHvKv > 0.05 THEN
+  qDriveRun := FALSE; qSpeedSp := 0.0;
+END_IF;
+(* load and excitation only while running *)
+IF NOT qDriveRun THEN
+  qLoadOn := FALSE; qLoadKw := 0.0;
+  qExcMode := 0;
+END_IF;
+
+IF busy THEN
+  tStep := tStep + cycleTime;
+  testTime := testTime + cycleTime;
+END_IF;
+
+END_FUNCTION_BLOCK

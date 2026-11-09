@@ -1,0 +1,57 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  # matiec (IEC 61131-3 compiler of the Beremiz / OpenPLC projects), pinned
+  MATIEC_REPO: https://github.com/beremiz/matiec.git
+  MATIEC_REF: c316fe57e335381cbe91f61c7366857198580ac7
+
+jobs:
+  test:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Python packages
+        run: pip install -r requirements.txt
+      - name: Cache matiec
+        id: matiec
+        uses: actions/cache@v4
+        with:
+          path: ~/matiec
+          key: matiec-${{ env.MATIEC_REF }}
+      - name: Build matiec
+        if: steps.matiec.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get install -y -qq bison flex autoconf automake libtool
+          git clone -q "$MATIEC_REPO" ~/matiec
+          cd ~/matiec && git checkout -q "$MATIEC_REF"
+          autoreconf -i && ./configure && make -j4
+      - name: Compile ST, tests, quick batches
+        run: QUICK=1 PYTHON=python bash scripts/run_all.sh
+      - name: Fault detection and cross-check must hold
+        run: |
+          python - <<'PY'
+          import json
+          s = json.load(open("results/summary.json"))
+          print("sweep", s["sweep_units"], "rejected", s["sweep_rejected"], "target", s["sweep_target_check_hit"])
+          assert s["sweep_rejected"] == s["sweep_units"]
+          assert s["sweep_target_check_hit"] == s["sweep_units"]
+          assert s["sweep_plc_vs_python_disagreements"] == 0
+          p = s["production"]
+          assert p["escapes"] == [] and p["aborted"] == 0 and p["plc_vs_python_disagreements"] == 0
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: results
+          path: |
+            results/summary.json
+            results/test_times.json
+            docs/img/

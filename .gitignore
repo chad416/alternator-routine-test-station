@@ -1,0 +1,10 @@
+build/
+__pycache__/
+.pytest_cache/
+*.pyc
+results/production.json
+results/sweep.json
+results/station.db
+results/reports/
+config/private/
+.venv/

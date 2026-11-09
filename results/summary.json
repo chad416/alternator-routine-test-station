@@ -1,0 +1,873 @@
+{
+ "detection": {
+  "R_STATOR_JOINT": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "R_STATOR",
+   "target_hits": 30,
+   "checks": {
+    "R_STATOR": 30,
+    "IF_LOAD": 1
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "R_ROTOR_TURNS": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "R_ROTOR",
+   "target_hits": 30,
+   "checks": {
+    "R_ROTOR": 30
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "R_EXC_STATOR": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "R_EXC_ST",
+   "target_hits": 30,
+   "checks": {
+    "R_EXC_ST": 30
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "R_EXC_ROTOR": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "R_EXC_ROT",
+   "target_hits": 30,
+   "checks": {
+    "R_EXC_ROT": 30
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "IR_LOW": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "IR_BEFORE",
+   "target_hits": 30,
+   "checks": {
+    "IR_BEFORE": 30,
+    "R_EXC_ST": 1
+   },
+   "routes": {
+    "DRYING": 30
+   }
+  },
+  "HV_WEAK": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "HV",
+   "target_hits": 30,
+   "checks": {
+    "HV": 30
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "SHORTED_TURN": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "UNBAL",
+   "target_hits": 30,
+   "checks": {
+    "UNBAL": 30,
+    "AVR_U": 2
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "PHASE_ORDER": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "PHASE_SEQ",
+   "target_hits": 30,
+   "checks": {
+    "PHASE_SEQ": 30
+   },
+   "routes": {
+    "REWORK": 30
+   }
+  },
+  "DIODE_OPEN": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "IF_NOLOAD",
+   "target_hits": 30,
+   "checks": {
+    "IF_NOLOAD": 30,
+    "IF_LOAD": 30
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "CORE_SATURATION": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "SAT",
+   "target_hits": 30,
+   "checks": {
+    "SAT": 30
+   },
+   "routes": {
+    "ENGINEERING": 30
+   }
+  },
+  "WEAK_REMANENCE": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "REMANENT",
+   "target_hits": 30,
+   "checks": {
+    "BUILDUP": 20,
+    "AVR_U": 20,
+    "REMANENT": 30
+   },
+   "routes": {
+    "RETEST": 30
+   }
+  },
+  "AVR_SENSING": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "AVR_U",
+   "target_hits": 30,
+   "checks": {
+    "AVR_U": 30,
+    "BUILDUP": 1,
+    "U_STAR": 10
+   },
+   "routes": {
+    "RETEST": 30
+   }
+  },
+  "AVR_DROOP": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "REG_PF08",
+   "target_hits": 30,
+   "checks": {
+    "REG_PF08": 30
+   },
+   "routes": {
+    "RETEST": 30
+   }
+  },
+  "AUX_WIRING": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "AVR_SUPPLY",
+   "target_hits": 30,
+   "checks": {
+    "AVR_SUPPLY": 30,
+    "BUILDUP": 14,
+    "AVR_U": 6
+   },
+   "routes": {
+    "REPAIR": 30
+   }
+  },
+  "PT100_OPEN": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "PT100",
+   "target_hits": 30,
+   "checks": {
+    "PT100": 30,
+    "HEATER": 1
+   },
+   "routes": {
+    "REWORK": 30
+   }
+  },
+  "PTC_SHORT": {
+   "units": 30,
+   "rejected": 30,
+   "aborted": 0,
+   "target_check": "PTC",
+   "target_hits": 30,
+   "checks": {
+    "PTC": 30
+   },
+   "routes": {
+    "REWORK": 30
+   }
+  },
+  "CT_REVERSED": {
+   "units": 20,
+   "rejected": 20,
+   "aborted": 0,
+   "target_check": "CT",
+   "target_hits": 20,
+   "checks": {
+    "CT": 20
+   },
+   "routes": {
+    "REWORK": 20
+   }
+  },
+  "HEATER_OPEN": {
+   "units": 20,
+   "rejected": 20,
+   "aborted": 0,
+   "target_check": "HEATER",
+   "target_hits": 20,
+   "checks": {
+    "HEATER": 20
+   },
+   "routes": {
+    "REWORK": 20
+   }
+  },
+  "STAR_LINK": {
+   "units": 10,
+   "rejected": 10,
+   "aborted": 0,
+   "target_check": "U_STAR",
+   "target_hits": 10,
+   "checks": {
+    "U_STAR": 10
+   },
+   "routes": {
+    "REWORK": 10
+   }
+  }
+ },
+ "sweep_units": 530,
+ "sweep_rejected": 530,
+ "sweep_target_check_hit": 530,
+ "sweep_plc_vs_python_disagreements": 0,
+ "production": {
+  "units": 400,
+  "faulty_units": 39,
+  "passed": 359,
+  "false_rejects": [
+   {
+    "serial": "S01-0035",
+    "frame": "small",
+    "failed": [
+     "IF_LOAD"
+    ]
+   },
+   {
+    "serial": "S01-0385",
+    "frame": "small",
+    "failed": [
+     "BUILDUP"
+    ]
+   }
+  ],
+  "escapes": [],
+  "aborted": 0,
+  "pareto": [
+   [
+    "PT100 open or out of range: check the sensor wiring",
+    4
+   ],
+   [
+    "PTC out of range: check the thermistor wiring",
+    4
+   ],
+   [
+    "Saturation curve out of range: check lamination grade and core stack",
+    4
+   ],
+   [
+    "AVR supply voltage wrong: check the supply winding tap and wiring",
+    4
+   ],
+   [
+    "CT orientation or ratio wrong: refit the CT (P1 towards the machine)",
+    3
+   ],
+   [
+    "Insulation resistance low: dry the winding and retest; rewind if it stays low",
+    3
+   ],
+   [
+    "Main rotor resistance out of tolerance: check turns and joints",
+    3
+   ],
+   [
+    "Dielectric breakdown: locate the flaw, rewind",
+    3
+   ],
+   [
+    "Exciter stator resistance out of tolerance: check coil and wire size",
+    2
+   ],
+   [
+    "Excitation needs too much field current: check rotating diodes and exciter",
+    2
+   ],
+   [
+    "Phase voltages unbalanced: look for a shorted turn or a wrong coil connection",
+    2
+   ],
+   [
+    "Voltage drops with reactive load: check the AVR droop setting",
+    1
+   ],
+   [
+    "On-load field current out of tolerance: check air gap and winding data, retest",
+    1
+   ],
+   [
+    "Remanent voltage low: re-magnetise the rotor and retest",
+    1
+   ],
+   [
+    "Residual magnetism too low: re-magnetise the rotor (field flash) and retest",
+    1
+   ],
+   [
+    "Exciter rotor resistance out of tolerance: check crimps and leads",
+    1
+   ],
+   [
+    "Wrong phase sequence: correct the output lead marking",
+    1
+   ],
+   [
+    "Slow voltage build-up: check remanence and AVR supply, retest",
+    1
+   ]
+  ],
+  "test_time_s": {
+   "large": {
+    "n": 79,
+    "mean": 429.61459273326244,
+    "max": 432.580810546875
+   },
+   "medium": {
+    "n": 87,
+    "mean": 307.1355047116334,
+    "max": 317.56402587890625
+   },
+   "medium type": {
+    "n": 10,
+    "mean": 523.9327758789062,
+    "max": 532.7974243164062
+   },
+   "small": {
+    "n": 173,
+    "mean": 249.23101921302046,
+    "max": 259.2960510253906
+   },
+   "small type": {
+    "n": 10,
+    "mean": 465.73658752441406,
+    "max": 471.31951904296875
+   }
+  },
+  "plc_vs_python_disagreements": 0
+ },
+ "capability": {
+  "R_STATOR": {
+   "small": {
+    "n": 185,
+    "mean": 0.04502437346287676,
+    "sd": 0.0005660301718582606,
+    "cpk": 1.31
+   },
+   "medium": {
+    "n": 97,
+    "mean": 0.004199644795513337,
+    "sd": 5.1218701337905675e-05,
+    "cpk": 1.36
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.0010986764181428884,
+    "sd": 1.3882768883260963e-05,
+    "cpk": 1.29
+   }
+  },
+  "R_ROTOR": {
+   "small": {
+    "n": 185,
+    "mean": 1.2006446561297854,
+    "sd": 0.015121908059056364,
+    "cpk": 1.31
+   },
+   "medium": {
+    "n": 97,
+    "mean": 1.9011278631760902,
+    "sd": 0.0203825949330316,
+    "cpk": 1.54
+   },
+   "large": {
+    "n": 79,
+    "mean": 2.5992616852627526,
+    "sd": 0.024900260190449424,
+    "cpk": 1.73
+   }
+  },
+  "R_EXC_ST": {
+   "small": {
+    "n": 185,
+    "mean": 11.99276555551065,
+    "sd": 0.1479135652675648,
+    "cpk": 1.34
+   },
+   "medium": {
+    "n": 97,
+    "mean": 9.479093266516617,
+    "sd": 0.13352015962111147,
+    "cpk": 1.13
+   },
+   "large": {
+    "n": 79,
+    "mean": 11.001003953474987,
+    "sd": 0.1509880704933247,
+    "cpk": 1.21
+   }
+  },
+  "R_EXC_ROT": {
+   "small": {
+    "n": 185,
+    "mean": 0.3498315915868089,
+    "sd": 0.004465229258245732,
+    "cpk": 1.29
+   },
+   "medium": {
+    "n": 97,
+    "mean": 0.2094414592096486,
+    "sd": 0.0025315784311302925,
+    "cpk": 1.31
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.15033345660076866,
+    "sd": 0.0018721856457185827,
+    "cpk": 1.28
+   }
+  },
+  "HV": {
+   "small": {
+    "n": 185,
+    "mean": 8.45729959591015,
+    "sd": 0.39508020911090264,
+    "cpk": 18.18
+   },
+   "medium": {
+    "n": 97,
+    "mean": 22.772097912031352,
+    "sd": 1.1894699897113485,
+    "cpk": 7.63
+   },
+   "large": {
+    "n": 79,
+    "mean": 67.58673052244549,
+    "sd": 3.6629265422997808,
+    "cpk": 2.49
+   }
+  },
+  "UNBAL": {
+   "small": {
+    "n": 185,
+    "mean": 0.07998837229820925,
+    "sd": 0.04041643549676681,
+    "cpk": 3.46
+   },
+   "medium": {
+    "n": 97,
+    "mean": 0.08831267709334947,
+    "sd": 0.04769310319385169,
+    "cpk": 2.88
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.08167128804835337,
+    "sd": 0.03782595722363,
+    "cpk": 3.69
+   }
+  },
+  "IF_NOLOAD": {
+   "small": {
+    "n": 185,
+    "mean": 0.5489671977790627,
+    "sd": 0.014348706103379408,
+    "cpk": 1.25
+   },
+   "medium": {
+    "n": 97,
+    "mean": 0.7496656074966352,
+    "sd": 0.01964991792748876,
+    "cpk": 1.27
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.9484788782988922,
+    "sd": 0.022789068454553297,
+    "cpk": 1.37
+   }
+  },
+  "AVR_SUPPLY": {
+   "small": {
+    "n": 185,
+    "mean": 120.14469056000581,
+    "sd": 2.353253950226306,
+    "cpk": 2.02
+   },
+   "medium": {
+    "n": 97,
+    "mean": 149.96850318515425,
+    "sd": 3.1136962352962394,
+    "cpk": 1.92
+   },
+   "large": {
+    "n": 79,
+    "mean": 105.09399124338657,
+    "sd": 2.1977540677152936,
+    "cpk": 1.9
+   }
+  },
+  "IF_LOAD": {
+   "small": {
+    "n": 185,
+    "mean": 1.6818042561814592,
+    "sd": 0.05191711145102628,
+    "cpk": 1.06
+   },
+   "medium": {
+    "n": 97,
+    "mean": 2.386550355203373,
+    "sd": 0.07066569649244299,
+    "cpk": 1.11
+   },
+   "large": {
+    "n": 79,
+    "mean": 2.530518399009222,
+    "sd": 0.0737352170480224,
+    "cpk": 1.13
+   }
+  },
+  "SAT": {
+   "small": {
+    "n": 185,
+    "mean": 1.3367874280826466,
+    "sd": 0.009318962759064211,
+    "cpk": 2.26
+   },
+   "medium": {
+    "n": 97,
+    "mean": 1.3465921497836555,
+    "sd": 0.010442291624135956,
+    "cpk": 1.7
+   },
+   "large": {
+    "n": 79,
+    "mean": 1.3063405571104605,
+    "sd": 0.007559575508300598,
+    "cpk": 2.48
+   }
+  },
+  "BUILDUP": {
+   "small": {
+    "n": 185,
+    "mean": 33.43675680418272,
+    "sd": 1.7616537696958134,
+    "cpk": 1.24
+   },
+   "medium": {
+    "n": 97,
+    "mean": 28.765360881372825,
+    "sd": 1.1645260439491942,
+    "cpk": 3.22
+   },
+   "large": {
+    "n": 79,
+    "mean": 23.4312234950971,
+    "sd": 0.09671848887259585,
+    "cpk": 57.1
+   }
+  },
+  "AVR_U": {
+   "small": {
+    "n": 185,
+    "mean": -0.003620745684649493,
+    "sd": 0.2136471253036732,
+    "cpk": 1.55
+   },
+   "medium": {
+    "n": 97,
+    "mean": 0.01351386001429607,
+    "sd": 0.2178557146779757,
+    "cpk": 1.51
+   },
+   "large": {
+    "n": 79,
+    "mean": -0.006324574917177611,
+    "sd": 0.20801974740822965,
+    "cpk": 1.59
+   }
+  },
+  "REG_PF08": {
+   "small": {
+    "n": 185,
+    "mean": -0.019610950856853427,
+    "sd": 0.026747062263576697,
+    "cpk": 18.45
+   },
+   "medium": {
+    "n": 97,
+    "mean": -0.0013738956408018304,
+    "sd": 0.026879452683189566,
+    "cpk": 18.58
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.0019654275354328036,
+    "sd": 0.02138695369091275,
+    "cpk": 23.35
+   }
+  },
+  "REG_PF10": {
+   "small": {
+    "n": 185,
+    "mean": 0.002622654568974237,
+    "sd": 0.02627211268433059,
+    "cpk": 19.0
+   },
+   "medium": {
+    "n": 97,
+    "mean": 0.0009557105180478568,
+    "sd": 0.025059811454041722,
+    "cpk": 19.94
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.0032856048606454006,
+    "sd": 0.024205991133314862,
+    "cpk": 20.61
+   }
+  },
+  "REMANENT": {
+   "small": {
+    "n": 185,
+    "mean": 13.727817777685217,
+    "sd": 1.0265038759635963,
+    "cpk": 1.21
+   },
+   "medium": {
+    "n": 97,
+    "mean": 13.3552880139695,
+    "sd": 1.0152456559796483,
+    "cpk": 1.1
+   },
+   "large": {
+    "n": 79,
+    "mean": 13.403666423845895,
+    "sd": 1.01673403272325,
+    "cpk": 1.12
+   }
+  },
+  "OVERLOAD": {
+   "small": {
+    "n": 10,
+    "mean": 94.55198211669922,
+    "sd": 0.13875420143088205,
+    "cpk": 10.94
+   },
+   "medium": {
+    "n": 10,
+    "mean": 95.20568923950195,
+    "sd": 0.12493853298740638,
+    "cpk": 13.89
+   }
+  },
+  "PT100": {
+   "small": {
+    "n": 185,
+    "mean": 108.81427166913006,
+    "sd": 1.3130350987378094,
+    "cpk": 0.97
+   },
+   "medium": {
+    "n": 97,
+    "mean": 108.64864113404579,
+    "sd": 1.1951098863274103,
+    "cpk": 1.02
+   },
+   "large": {
+    "n": 79,
+    "mean": 108.81412071517751,
+    "sd": 1.164632631302985,
+    "cpk": 1.09
+   }
+  },
+  "PTC": {
+   "small": {
+    "n": 185,
+    "mean": 88.71530811206715,
+    "sd": 15.157160020080223,
+    "cpk": 1.51
+   },
+   "medium": {
+    "n": 97,
+    "mean": 87.2051835207595,
+    "sd": 15.650024638038996,
+    "cpk": 1.43
+   },
+   "large": {
+    "n": 79,
+    "mean": 91.24141775203657,
+    "sd": 15.369410076330949,
+    "cpk": 1.55
+   }
+  },
+  "CT": {
+   "medium": {
+    "n": 97,
+    "mean": 0.9991482950977444,
+    "sd": 0.004613156435970418,
+    "cpk": 7.16
+   },
+   "large": {
+    "n": 79,
+    "mean": 0.7500049984907802,
+    "sd": 0.0033420074415232387,
+    "cpk": 7.48
+   }
+  },
+  "HEATER": {
+   "medium": {
+    "n": 97,
+    "mean": 212.02812540899848,
+    "sd": 4.5826501149730205,
+    "cpk": 1.05
+   },
+   "large": {
+    "n": 79,
+    "mean": 106.17694478095332,
+    "sd": 2.035540103915768,
+    "cpk": 1.15
+   }
+  },
+  "U_STAR": {
+   "large": {
+    "n": 79,
+    "mean": -0.008174746716450281,
+    "sd": 0.20345978827214384,
+    "cpk": 1.62
+   }
+  }
+ },
+ "test_times": {
+  "source": "alternator-routine-test-station v0.1.0",
+  "frames": {
+   "small": {
+    "routine_s": 249.2,
+    "handling_s": 900.0,
+    "type_test_extra_s": 216.5,
+    "type_test_on_this_bench": true,
+    "n": 173
+   },
+   "medium": {
+    "routine_s": 307.1,
+    "handling_s": 1500.0,
+    "type_test_extra_s": 216.8,
+    "type_test_on_this_bench": true,
+    "n": 87
+   },
+   "large": {
+    "routine_s": 429.6,
+    "handling_s": 2400.0,
+    "type_test_extra_s": 0.0,
+    "type_test_on_this_bench": false,
+    "n": 79
+   }
+  },
+  "changeover_s": 600,
+  "note": "routine_s = mean PLC sequence time of passed units (simulated). handling_s = mounting, coupling, wiring and removal per unit, an assumption from config/capacity.json; bench occupation = routine_s + handling_s. type_test_extra_s = 0 where the bench cannot run the type test (load above bench power)."
+ },
+ "capacity": [
+  {
+   "multiplier": 1.0,
+   "handling_scale": 1.0,
+   "sequence_h": 2.5,
+   "handling_h": 10.7,
+   "changeover_h": 1.0,
+   "bench_hours_per_day": 14.2,
+   "utilisation_one_bench": 0.79,
+   "benches": 1
+  },
+  {
+   "multiplier": 2.0,
+   "handling_scale": 1.0,
+   "sequence_h": 5.0,
+   "handling_h": 21.4,
+   "changeover_h": 1.0,
+   "bench_hours_per_day": 27.3,
+   "utilisation_one_bench": 1.52,
+   "benches": 2
+  },
+  {
+   "multiplier": 3.0,
+   "handling_scale": 1.0,
+   "sequence_h": 7.5,
+   "handling_h": 32.0,
+   "changeover_h": 1.0,
+   "bench_hours_per_day": 40.5,
+   "utilisation_one_bench": 2.25,
+   "benches": 3
+  },
+  {
+   "multiplier": 1.0,
+   "handling_scale": 0.5,
+   "sequence_h": 2.5,
+   "handling_h": 5.3,
+   "changeover_h": 1.0,
+   "bench_hours_per_day": 8.8,
+   "utilisation_one_bench": 0.49,
+   "benches": 1
+  },
+  {
+   "multiplier": 2.0,
+   "handling_scale": 0.5,
+   "sequence_h": 5.0,
+   "handling_h": 10.7,
+   "changeover_h": 1.0,
+   "bench_hours_per_day": 16.7,
+   "utilisation_one_bench": 0.93,
+   "benches": 1
+  },
+  {
+   "multiplier": 3.0,
+   "handling_scale": 0.5,
+   "sequence_h": 7.5,
+   "handling_h": 16.0,
+   "changeover_h": 1.0,
+   "bench_hours_per_day": 24.5,
+   "utilisation_one_bench": 1.36,
+   "benches": 2
+  }
+ ]
+}

@@ -1,0 +1,292 @@
+{
+ "serial": "EX-0001-PASS",
+ "frame": "medium",
+ "fault": null,
+ "type_test": false,
+ "seed": 2,
+ "verdict": true,
+ "aborted": false,
+ "abort_code": 0,
+ "first_fail": null,
+ "test_time_s": 303.97149658203125,
+ "wall_s": 0.27003091800000334,
+ "recipe": {
+  "RCUN": 400.0,
+  "RCFN": 50.0,
+  "RCPOLES": 4,
+  "RCPTESTKW": 640.0,
+  "RCEXCTYPE": 2,
+  "RCTYPETEST": 0,
+  "RCCTFITTED": 1,
+  "RCTESTDELTA": 0,
+  "RCUNSTAR": 400.0,
+  "RCHEATERFITTED": 1,
+  "RCHEATERR": 211.6,
+  "RCHEATERTOLPCT": 7.0,
+  "RCRSTATOR": 0.0042,
+  "RCRROTOR": 1.9,
+  "RCREXCST": 9.5,
+  "RCREXCROT": 0.21,
+  "RCRTOLPCT": 5.0,
+  "RCIRKV": 0.5,
+  "RCIRTIME": 60.0,
+  "RCIRMIN": 100.0,
+  "RCHVKV": 1.8,
+  "RCHVTIME": 60.0,
+  "RCHVLEAKMAX": 50.0,
+  "RCIF0NOM": 0.75,
+  "RCIF0TOLPCT": 10.0,
+  "RCIFLNOM": 2.3828205892399663,
+  "RCIFLTOLPCT": 10.0,
+  "RCUNBALMAX": 0.5,
+  "RCAVRSUPMIN": 132.0,
+  "RCAVRSUPMAX": 168.00000000000003,
+  "RCSATMIN": 1.25,
+  "RCSATMAX": 1.4,
+  "RCBUILDLVLPCT": 50.0,
+  "RCBUILDMAXHZ": 40.0,
+  "RCAVRUTOLPCT": 1.0,
+  "RCREGTOLPCT": 1.5,
+  "RCCTSECMIN": 0.9,
+  "RCCTSECMAX": 1.2,
+  "RCREMMINPCT": 10.0,
+  "RCPT100MIN": 105.0,
+  "RCPT100MAX": 115.0,
+  "RCPTCMIN": 20.0,
+  "RCPTCMAX": 250.0,
+  "RCSETTLE": 15.0,
+  "RCOVERSPEEDTIME": 120.0,
+  "RCOVERLOADTIME": 30.0,
+  "RCSTEPTIMEOUT": 600.0
+ },
+ "checks": {
+  "R_STATOR": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.00420805811882019,
+   "lo": 0.00399,
+   "hi": 0.00441,
+   "py_pass": true
+  },
+  "R_ROTOR": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 1.8880863189697266,
+   "lo": 1.805,
+   "hi": 1.9949999999999999,
+   "py_pass": true
+  },
+  "R_EXC_ST": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 9.448440551757812,
+   "lo": 9.025,
+   "hi": 9.975,
+   "py_pass": true
+  },
+  "R_EXC_ROT": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.2036866396665573,
+   "lo": 0.19949999999999998,
+   "hi": 0.2205,
+   "py_pass": true
+  },
+  "IR_BEFORE": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 763.5767822265625,
+   "lo": 100.0,
+   "hi": null,
+   "py_pass": true
+  },
+  "HV": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 22.26823616027832,
+   "lo": null,
+   "hi": 50.0,
+   "py_pass": true
+  },
+  "IR_AFTER": {
+   "expected": false,
+   "done": false,
+   "pass": false,
+   "value": 0.0,
+   "lo": 100.0,
+   "hi": null,
+   "py_pass": null
+  },
+  "PHASE_SEQ": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": null,
+   "lo": null,
+   "hi": null,
+   "py_pass": true
+  },
+  "UNBAL": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.08879313617944717,
+   "lo": null,
+   "hi": 0.5,
+   "py_pass": true
+  },
+  "IF_NOLOAD": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.7666667103767395,
+   "lo": 0.675,
+   "hi": 0.8250000000000001,
+   "py_pass": true
+  },
+  "AVR_SUPPLY": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 152.27145385742188,
+   "lo": 132.0,
+   "hi": 168.00000000000003,
+   "py_pass": true
+  },
+  "IF_LOAD": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 2.404862642288208,
+   "lo": 2.1445385303159696,
+   "hi": 2.621102648163963,
+   "py_pass": true
+  },
+  "SAT": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 1.346867561340332,
+   "lo": 1.25,
+   "hi": 1.4,
+   "py_pass": true
+  },
+  "BUILDUP": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 27.520000457763672,
+   "lo": null,
+   "hi": 40.0,
+   "py_pass": true
+  },
+  "AVR_U": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.22265625,
+   "lo": -1.0,
+   "hi": 1.0,
+   "py_pass": true
+  },
+  "REG_PF08": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.0022608961444348097,
+   "lo": -1.5,
+   "hi": 1.5,
+   "py_pass": true
+  },
+  "REG_PF10": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 0.0008297564927488565,
+   "lo": -1.5,
+   "hi": 1.5,
+   "py_pass": true
+  },
+  "CT": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 1.0009765625,
+   "lo": 0.9,
+   "hi": 1.2,
+   "py_pass": true
+  },
+  "U_STAR": {
+   "expected": false,
+   "done": false,
+   "pass": false,
+   "value": 0.0,
+   "lo": -1.0,
+   "hi": 1.0,
+   "py_pass": null
+  },
+  "REMANENT": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 14.488591194152832,
+   "lo": 10.0,
+   "hi": null,
+   "py_pass": true
+  },
+  "OVERLOAD": {
+   "expected": false,
+   "done": false,
+   "pass": false,
+   "value": 0.0,
+   "lo": 90.0,
+   "hi": null,
+   "py_pass": null
+  },
+  "OVERSPEED": {
+   "expected": false,
+   "done": false,
+   "pass": false,
+   "value": 0.0,
+   "lo": 118.0,
+   "hi": 122.0,
+   "py_pass": null
+  },
+  "PT100": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 109.49210357666016,
+   "lo": 105.0,
+   "hi": 115.0,
+   "py_pass": true
+  },
+  "PTC": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 88.55542755126953,
+   "lo": 20.0,
+   "hi": 250.0,
+   "py_pass": true
+  },
+  "HEATER": {
+   "expected": true,
+   "done": true,
+   "pass": true,
+   "value": 214.4115753173828,
+   "lo": 196.78799999999998,
+   "hi": 226.412,
+   "py_pass": true
+  }
+ },
+ "bench_limited": false,
+ "t_amb": 24.51371304540588,
+ "nonconformity": null
+}

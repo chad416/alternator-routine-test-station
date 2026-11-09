@@ -1,0 +1,11 @@
+{
+  "_note": "Assumptions for the bench capacity estimate. Not plant data.",
+  "demand_per_day": {"small": 20, "medium": 6, "large": 4},
+  "handling_s": {"small": 900, "medium": 1500, "large": 2400},
+  "changeover_s": 600,
+  "changeovers_per_day": 6,
+  "retest_rate": 0.05,
+  "shifts_per_day": 3,
+  "hours_per_shift": 7.5,
+  "bench_availability": 0.80
+}

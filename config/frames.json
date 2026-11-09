@@ -1,0 +1,77 @@
+{
+  "_note": "Generic, illustrative frames and limits for a simulated plant. Not data of any manufacturer. Limits are set per frame the way a production order would carry them.",
+  "bench": {
+    "max_kw": 1500.0,
+    "hv_trip_ma": 100.0,
+    "ir_operate_v": 10.0,
+    "scan_s": 0.02
+  },
+  "frames": {
+    "small": {
+      "desc": "100 kVA, 400 V star, 50 Hz, 4 poles, shunt-excited AVR",
+      "kva": 100.0, "un": 400.0, "un_star": 400.0, "test_delta": false,
+      "fn": 50.0, "poles": 4, "exc_type": 1,
+      "ct_fitted": false, "heater_w": 0.0, "heater_v": 230.0,
+      "r_stator": 0.045, "r_rotor": 1.20, "r_exc_st": 12.0, "r_exc_rot": 0.35,
+      "if0": 0.55, "occ_c": 0.60, "xar": 2.20, "xl": 0.10, "td": 0.30,
+      "rem_pct": 13.5, "sup_ratio": 0.30, "sup_nom": 120.0,
+      "cap_nf": 15.0, "ir_typ_mohm": 1500.0,
+      "ramp_rpm_s": 300.0, "settle_s": 10.0,
+      "limits": {
+        "r_tol_pct": 5.0, "ir_kv": 0.5, "ir_time_s": 60.0, "ir_min_mohm": 100.0,
+        "hv_time_s": 60.0, "hv_leak_max_ma": 30.0,
+        "if0_tol_pct": 10.0, "ifl_tol_pct": 10.0, "unbal_max_pct": 0.5,
+        "avr_sup_tol_pct": 12.0, "sat_min": 1.25, "sat_max": 1.40,
+        "build_lvl_pct": 50.0, "build_max_hz": 40.0,
+        "avr_u_tol_pct": 1.0, "reg_tol_pct": 1.5,
+        "ct_sec_min": 0.9, "ct_sec_max": 1.2, "rem_min_pct": 10.0,
+        "pt100_min": 105.0, "pt100_max": 115.0, "ptc_min": 20.0, "ptc_max": 250.0,
+        "heater_tol_pct": 7.0, "overspeed_s": 120.0, "overload_s": 30.0, "step_timeout_s": 600.0
+      }
+    },
+    "medium": {
+      "desc": "800 kVA, 400 V star, 50 Hz, 4 poles, AVR fed from auxiliary windings, CT, space heater",
+      "kva": 800.0, "un": 400.0, "un_star": 400.0, "test_delta": false,
+      "fn": 50.0, "poles": 4, "exc_type": 2,
+      "ct_fitted": true, "heater_w": 250.0, "heater_v": 230.0,
+      "r_stator": 0.0042, "r_rotor": 1.90, "r_exc_st": 9.5, "r_exc_rot": 0.21,
+      "if0": 0.75, "occ_c": 0.60, "xar": 2.30, "xl": 0.11, "td": 0.60,
+      "rem_pct": 13.5, "sup_ratio": 0.375, "sup_nom": 150.0,
+      "cap_nf": 40.0, "ir_typ_mohm": 900.0,
+      "ramp_rpm_s": 120.0, "settle_s": 15.0,
+      "limits": {
+        "r_tol_pct": 5.0, "ir_kv": 0.5, "ir_time_s": 60.0, "ir_min_mohm": 100.0,
+        "hv_time_s": 60.0, "hv_leak_max_ma": 50.0,
+        "if0_tol_pct": 10.0, "ifl_tol_pct": 10.0, "unbal_max_pct": 0.5,
+        "avr_sup_tol_pct": 12.0, "sat_min": 1.25, "sat_max": 1.40,
+        "build_lvl_pct": 50.0, "build_max_hz": 40.0,
+        "avr_u_tol_pct": 1.0, "reg_tol_pct": 1.5,
+        "ct_sec_min": 0.9, "ct_sec_max": 1.2, "rem_min_pct": 10.0,
+        "pt100_min": 105.0, "pt100_max": 115.0, "ptc_min": 20.0, "ptc_max": 250.0,
+        "heater_tol_pct": 7.0, "overspeed_s": 120.0, "overload_s": 30.0, "step_timeout_s": 600.0
+      }
+    },
+    "large": {
+      "desc": "2500 kVA, 690 V star (tested at 400 V in delta, then checked in star), 50 Hz, 4 poles, PMG-fed AVR, CT, space heater",
+      "kva": 2500.0, "un": 400.0, "un_star": 690.0, "test_delta": true,
+      "fn": 50.0, "poles": 4, "exc_type": 3,
+      "ct_fitted": true, "heater_w": 500.0, "heater_v": 230.0,
+      "r_stator": 0.0011, "r_rotor": 2.60, "r_exc_st": 11.0, "r_exc_rot": 0.15,
+      "if0": 0.95, "occ_c": 0.60, "xar": 2.40, "xl": 0.12, "td": 1.00,
+      "rem_pct": 13.5, "sup_ratio": 0.0, "sup_nom": 105.0,
+      "cap_nf": 90.0, "ir_typ_mohm": 600.0,
+      "ramp_rpm_s": 50.0, "settle_s": 20.0,
+      "limits": {
+        "r_tol_pct": 5.0, "ir_kv": 1.0, "ir_time_s": 60.0, "ir_min_mohm": 100.0,
+        "hv_time_s": 60.0, "hv_leak_max_ma": 95.0,
+        "if0_tol_pct": 10.0, "ifl_tol_pct": 10.0, "unbal_max_pct": 0.5,
+        "avr_sup_tol_pct": 12.0, "sat_min": 1.25, "sat_max": 1.40,
+        "build_lvl_pct": 50.0, "build_max_hz": 40.0,
+        "avr_u_tol_pct": 1.0, "reg_tol_pct": 1.5,
+        "ct_sec_min": 0.9, "ct_sec_max": 1.2, "rem_min_pct": 10.0,
+        "pt100_min": 105.0, "pt100_max": 115.0, "ptc_min": 20.0, "ptc_max": 250.0,
+        "heater_tol_pct": 7.0, "overspeed_s": 120.0, "overload_s": 30.0, "step_timeout_s": 600.0
+      }
+    }
+  }
+}
